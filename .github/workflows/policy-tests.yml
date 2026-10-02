@@ -1,0 +1,28 @@
+name: Policy tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  kyverno:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: kyverno/action-install-cli@v0.2.0
+      - name: Run Kyverno CLI tests
+        run: kyverno test kyverno/tests
+
+  gatekeeper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: open-policy-agent/setup-opa@v2
+      - name: Check Rego compiles
+        run: |
+          yq '.spec.targets[0].rego' gatekeeper/templates/k8srequiredlabels.yaml > /tmp/policy.rego
+          opa check --v0-compatible /tmp/policy.rego

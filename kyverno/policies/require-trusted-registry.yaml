@@ -1,0 +1,23 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-trusted-registry
+  annotations:
+    policies.kyverno.io/title: Require images from the trusted registry
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/severity: high
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: trusted-registry-only
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: "Images must come from ghcr.io/your-org/ and be pinned by digest."
+        pattern:
+          spec:
+            containers:
+              - image: "ghcr.io/your-org/*@sha256:*"

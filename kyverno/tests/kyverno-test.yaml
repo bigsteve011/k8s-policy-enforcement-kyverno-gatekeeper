@@ -1,0 +1,41 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pod-hardening
+policies:
+  - ../policies/restrict-privileged-and-root.yaml
+  - ../policies/require-trusted-registry.yaml
+resources:
+  - ../../test-resources/pod-compliant.yaml
+  - ../../test-resources/pod-privileged.yaml
+results:
+  - policy: restrict-privileged-and-root
+    rule: run-as-non-root
+    resources: [compliant]
+    kind: Pod
+    result: pass
+  - policy: restrict-privileged-and-root
+    rule: harden-containers
+    resources: [compliant]
+    kind: Pod
+    result: pass
+  - policy: require-trusted-registry
+    rule: trusted-registry-only
+    resources: [compliant]
+    kind: Pod
+    result: pass
+  - policy: restrict-privileged-and-root
+    rule: run-as-non-root
+    resources: [privileged]
+    kind: Pod
+    result: fail
+  - policy: restrict-privileged-and-root
+    rule: harden-containers
+    resources: [privileged]
+    kind: Pod
+    result: fail
+  - policy: require-trusted-registry
+    rule: trusted-registry-only
+    resources: [privileged]
+    kind: Pod
+    result: fail
